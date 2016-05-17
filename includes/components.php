@@ -29,8 +29,8 @@ class RCPBP_Components {
 	}
 
 	protected function hooks() {
-		add_filter( 'bp_core_admin_tabs', array( $this, 'bp_restricted_tab' ) );
-		add_action( bp_core_admin_hook(), array( $this, 'restricted_settings_page' ), 5 );
+//		add_filter( 'bp_core_admin_tabs', array( $this, 'bp_restricted_tab' ) );
+//		add_action( bp_core_admin_hook(), array( $this, 'restricted_settings_page' ), 5 );
 	}
 
 	public function restricted_settings_page() {
