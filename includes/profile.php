@@ -29,7 +29,6 @@ class RCPBP_Profile {
 	}
 
 	protected function hooks() {
-		bp_is_active();
 		add_action( 'bp_settings_setup_nav', array( $this, 'setup_settings_nav' ) );
 	}
 
