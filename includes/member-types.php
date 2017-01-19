@@ -109,8 +109,9 @@ class RCPBP_Member_Types {
 			return $return;
 		}
 
-		// set the member type. Overwrites the last value even if the new subscription does not have a member type
-		bp_set_member_type( $user_id, rcpbp_get_subscription_member_type( $subscription_id ) );
+		// set the member type.
+		$append_member_type = apply_filters( 'rcpbp_append_member_type', false, $user_id );
+		bp_set_member_type( $user_id, rcpbp_get_subscription_member_type( $subscription_id ), $append_member_type );
 
 		do_action( 'rcpbp_set_user_member_type', $user_id, $subscription_id );
 

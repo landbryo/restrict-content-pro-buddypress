@@ -31,6 +31,8 @@ class RCPBP_Setup {
 		add_action( 'admin_init', array( $this, 'deactivate_license' ) );
 		add_action( 'admin_init', array( $this, 'register_settings' ), 50 );
 		add_action( 'admin_menu', array( $this, 'admin_menu'        ), 50 );
+
+		add_action( 'admin_enqueue_scripts', array( $this, 'admin_styles' ) );
 	}
 
 	public function maybe_setup() {
@@ -45,8 +47,41 @@ class RCPBP_Setup {
 //		include_once( RCPBP_PATH . '/includes/components.php' );
 		include_once( RCPBP_PATH . '/includes/member-types.php' );
 		include_once( RCPBP_PATH . '/includes/profile.php' );
-		include_once( RCPBP_PATH . '/includes/restricted_content.php' );
+		include_once( RCPBP_PATH . '/includes/restricted-content.php' );
 		include_once( RCPBP_PATH . '/includes/groups.php' );
+	}
+
+	/**
+	 * Initialize admin scripts and styles
+	 * 
+	 * @param $hook
+	 */
+	public function admin_styles( $hook ) {
+		global $rcp_members_page, $rcp_subscriptions_page, $rcp_discounts_page, $rcp_payments_page, $rcp_reports_page, $rcp_settings_page, $rcp_export_page, $rcp_logs_page, $rcp_help_page, $rcp_tools_page, $rcp_add_ons_page;
+		$pages = array(
+			$rcp_members_page,
+			$rcp_subscriptions_page,
+			$rcp_discounts_page,
+			$rcp_payments_page,
+			$rcp_reports_page,
+			$rcp_settings_page,
+			$rcp_export_page,
+			$rcp_logs_page,
+			$rcp_help_page,
+			$rcp_tools_page,
+			$rcp_add_ons_page,
+			'post.php',
+			'edit.php',
+			'post-new.php'
+		);
+
+		wp_register_style( 'rcpbp-admin-css', RCPBP_URL . 'assets/css/admin-styles.css', array(), RCPBP_VERSION );
+		wp_enqueue_script( 'rcpbp-admin-js', RCPBP_URL . 'assets/js/admin.js', array( 'jquery' ), RCPBP_VERSION );
+
+		if ( in_array( $hook, $pages ) ) {
+			wp_enqueue_style( 'rcpbp-admin-css' );
+			wp_enqueue_script( 'rcpbp-admin-js' );
+		}
 	}
 
 	/**
@@ -269,7 +304,7 @@ function rcpbp_check_license() {
 		$response = wp_remote_post( RCPBP_STORE_URL, array( 'timeout' => 35, 'sslverify' => false, 'body' => $api_params ) );
 
 		if( is_wp_error( $response ) ) {
-			return false;
+			return;
 		}
 
 		$license_data = json_decode( wp_remote_retrieve_body( $response ) );
