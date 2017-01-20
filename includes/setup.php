@@ -27,10 +27,11 @@ class RCPBP_Setup {
 	protected function __construct() {
 		add_action( 'plugins_loaded', array( $this, 'maybe_setup' ), -9999 );
 
-		add_action( 'admin_init', array( $this, 'activate_license'   ) );
-		add_action( 'admin_init', array( $this, 'deactivate_license' ) );
+		add_action( 'admin_init', array( $this, 'activate_license'   ), 100 );
+		add_action( 'admin_init', array( $this, 'deactivate_license' ), 100 );
 		add_action( 'admin_init', array( $this, 'register_settings' ), 50 );
 		add_action( 'admin_menu', array( $this, 'admin_menu'        ), 50 );
+		add_action( 'admin_notices', array( $this, 'license_admin_notice' ) );
 
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_styles' ) );
 	}
@@ -128,7 +129,7 @@ class RCPBP_Setup {
 	 * @return      void
 	 */
 	public function admin_menu() {
-		add_submenu_page( 'rcp-members', __( 'BuddyPress Settings', 'rcpbp' ), __( 'BuddyPress', 'rcpbp' ), 'manage_options', 'rcpbp-settings', array( $this, 'settings_page' ) );
+		add_submenu_page( 'rcp-members', __( 'BuddyPress Settings', 'rcpbp' ), __( 'BuddyPress', 'rcpbp' ), 'manage_options', RCPBP_PLUGIN_LICENSE_PAGE, array( $this, 'settings_page' ) );
 	}
 
 	public function settings_page() {
@@ -173,6 +174,7 @@ class RCPBP_Setup {
 
 			</form>
 		</div>
+
 	<?php
 	}
 
@@ -216,17 +218,81 @@ class RCPBP_Setup {
 			'body'      => $api_params
 		) );
 
-		// make sure the response came back okay
-		if ( is_wp_error( $response ) ) {
-			return;
+		if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
+
+			if ( is_wp_error( $response ) ) {
+				$message = $response->get_error_message();
+			} else {
+				$message = __( 'An error occurred, please try again.' );
+			}
+
+		} else {
+
+			// decode the license data
+			$license_data = json_decode( wp_remote_retrieve_body( $response ) );
+
+			if ( false === $license_data->success ) {
+
+				switch( $license_data->error ) {
+
+					case 'expired' :
+
+						$message = sprintf(
+							__( 'Your license key expired on %s.' ),
+							date_i18n( get_option( 'date_format' ), strtotime( $license_data->expires, current_time( 'timestamp' ) ) )
+						);
+						break;
+
+					case 'revoked' :
+
+						$message = __( 'Your license key has been disabled.' );
+						break;
+
+					case 'missing' :
+
+						$message = __( 'Invalid license.' );
+						break;
+
+					case 'invalid' :
+					case 'site_inactive' :
+
+						$message = __( 'Your license is not active for this URL.' );
+						break;
+
+					case 'item_name_mismatch' :
+
+						$message = sprintf( __( 'This appears to be an invalid license key for %s.' ), RCPBP_ITEM_NAME );
+						break;
+
+					case 'no_activations_left':
+
+						$message = __( 'Your license key has reached its activation limit.' );
+						break;
+
+					default :
+
+						$message = __( 'An error occurred, please try again.' );
+						break;
+				}
+
+			}
 		}
 
-		// decode the license data
-		$license_data = json_decode( wp_remote_retrieve_body( $response ) );
+		delete_transient( 'rcpbp_license_check' );
+
+		// Check if anything passed on a message constituting a failure
+		if ( ! empty( $message ) ) {
+			$base_url = admin_url( 'admin.php?page=' . RCPBP_PLUGIN_LICENSE_PAGE );
+			$redirect = add_query_arg( array( 'sl_activation' => 'false', 'message' => urlencode( $message ) ), $base_url );
+
+			wp_redirect( $redirect );
+			exit();
+		}
 
 		// $license_data->license will be either "valid" or "invalid"
 		update_option( 'rcpbp_license_status', $license_data->license );
-		delete_transient( 'rcpbp_license_check' );
+		wp_redirect( admin_url( 'admin.php?page=' . RCPBP_PLUGIN_LICENSE_PAGE ) );
+		exit();
 
 	}
 
@@ -261,19 +327,59 @@ class RCPBP_Setup {
 		) );
 
 		// make sure the response came back okay
-		if ( is_wp_error( $response ) ) {
-			return;
+		if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
+
+			if ( is_wp_error( $response ) ) {
+				$message = $response->get_error_message();
+			} else {
+				$message = __( 'An error occurred, please try again.' );
+			}
+
+			$base_url = admin_url( 'admin.php?page=' . RCPBP_PLUGIN_LICENSE_PAGE );
+			$redirect = add_query_arg( array( 'sl_activation' => 'false', 'message' => urlencode( $message ) ), $base_url );
+
+			wp_redirect( $redirect );
+			exit();
 		}
 
 		// decode the license data
 		$license_data = json_decode( wp_remote_retrieve_body( $response ) );
 
 		// $license_data->license will be either "deactivated" or "failed"
-		if ( $license_data->license == 'deactivated' ) {
+		if( $license_data->license == 'deactivated' ) {
 			delete_option( 'rcpbp_license_status' );
-			delete_transient( 'rcpbp_license_check' );
+			set_transient( 'rcpbp_license_check', $license_data->license, DAY_IN_SECONDS );
 		}
 
+		wp_redirect( admin_url( 'admin.php?page=' . RCPBP_PLUGIN_LICENSE_PAGE ) );
+		exit();
+
+	}
+
+	/**
+	 * This is a means of catching errors from the activation method above and displaying it to the customer
+	 */
+	public function license_admin_notice() {
+		if ( isset( $_GET['sl_activation'] ) && ! empty( $_GET['message'] ) ) {
+
+			switch ( $_GET['sl_activation'] ) {
+
+				case 'false':
+					$message = urldecode( $_GET['message'] );
+					?>
+					<div class="error">
+						<p><?php echo $message; ?></p>
+					</div>
+					<?php
+					break;
+
+				case 'true':
+				default:
+					// Developers can put a custom success message here for when activation is successful if they way.
+					break;
+
+			}
+		}
 	}
 
 }
