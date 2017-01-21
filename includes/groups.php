@@ -403,6 +403,39 @@ class RCPBP_Groups {
 			}
 		}
 
+		$member_types      = groups_get_groupmeta( $group->id, 'rcpbp_member_types', true );
+		$restricted_groups = groups_get_groupmeta( $group->id, 'rcpbp_groups', true );
+
+		// Check if the user has one of the given member types
+		if ( $member_types ) {
+			$has_type = false;
+			foreach( (array) $member_types as $type ) {
+				if ( bp_has_member_type( $user_id, $type ) ) {
+					$has_type = true;
+					break;
+				}
+			}
+
+			if ( ! apply_filters( 'rcpbp_member_can_access_member_types', $has_type, $user_id, $group->id, $ret ) ) {
+				$ret = false;
+			}
+		}
+
+		// Check if the user is a member of any of the given groups
+		if ( $restricted_groups ) {
+			$group_member = false;
+			foreach( (array) $restricted_groups as $g ) {
+				if ( groups_is_user_member( $user_id, $g ) ) {
+					$group_member = true;
+					break;
+				}
+			}
+
+			if ( ! apply_filters( 'rcpbp_member_can_access_groups', $group_member, $user_id, $group->id, $ret ) ) {
+				$ret = false;
+			}
+		}
+
 		if( user_can( $member->ID, 'manage_options' ) ) {
 			$ret = true;
 		}
