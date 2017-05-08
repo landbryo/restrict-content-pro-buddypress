@@ -114,7 +114,7 @@ function rcpbp_remove_member_type($new_status = '', $user_id, $old_status) {
 		$user_has_memtype = rcpbp_get_subscription_member_type($rcp_user_sub_level);
 
 		//if the users subscription has a member type and we are cancelling then clear the member type
-		if(! empty($user_has_memtype) and $new_status === 'expired' and ($user_has_memtype === $user_has_memtype)) {
+		if(! empty($user_has_memtype) and $new_status === 'expired') {
 			bp_set_member_type( $user_id, '' );
 		}
 
