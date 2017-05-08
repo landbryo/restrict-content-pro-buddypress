@@ -123,10 +123,6 @@ function rcpbp_remove_member_type($new_status = '', $user_id, $old_status) {
 			bp_set_member_type( $user_id, rcpbp_get_subscription_member_type($rcp_user_sub_level));
 		}
 
-		$updated = bp_get_member_type($user_id);
-
-		$test = 'test';
-
 	}
 
 }
