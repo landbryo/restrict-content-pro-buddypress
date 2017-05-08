@@ -100,3 +100,18 @@ function rcpbp_plugin_updater() {
 add_action( 'admin_init', 'rcpbp_plugin_updater' );
 
 
+/**
+ * if RCP disable toolbar setting is set then prevent Buddypress from loading either the admin or bp admin bar
+ */
+function rcpbp_show_admin_bar() {
+
+	$rcp_options = get_option( 'rcp_settings' );
+
+	if ( isset( $rcp_options['disable_toolbar'] ) && !(current_user_can('administrator')) ) {
+		remove_action('init','bp_core_load_admin_bar',9);
+		show_admin_bar( false );
+
+	}
+}
+
+add_action('init','rcpbp_show_admin_bar',8);
