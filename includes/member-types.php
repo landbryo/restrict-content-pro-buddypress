@@ -74,18 +74,6 @@ class RCPBP_Member_Types {
 	 */
 	public function subscription_member_type_save( $subscription_id, $args ) {
 
-		// make sure the member type is set
-/*		if ( empty( $_POST['member-type'] ) ) {
-			return;
-		}*/
-
-
-
-		// make sure the member type is valid
-/*		if ( ! in_array( $_POST['member-type'], (array) bp_get_member_types( array(), 'names' ) ) ) {
-			return;
-		}*/
-
 		rcpbp_set_subscription_member_type( $subscription_id, $_POST['member-type'] );
 	}
 
