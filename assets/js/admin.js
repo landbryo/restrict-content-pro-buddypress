@@ -41,5 +41,13 @@ jQuery(document).ready(function($){
 	group_control.insertAfter(role_control);
 	member_type_control.insertAfter(role_control);
 
+	$('.rcp_revoke').click(function() {
+		if(confirm(rcp_vars.revoke_access)) {
+			return true;
+		} else {
+			return false;
+		}
+	});
+
 
 });

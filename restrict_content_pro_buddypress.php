@@ -99,4 +99,36 @@ function rcpbp_plugin_updater() {
 }
 add_action( 'admin_init', 'rcpbp_plugin_updater' );
 
+function rcpbp_remove_member_type($new_status = '', $user_id, $old_status) {
 
+	if(! empty($new_status)) {
+
+
+		//get the users subscription level
+		$rcp_user_sub_level = rcp_get_subscription_id($user_id);
+
+		//get the users current member type
+		$rcpbp_memtype = bp_get_member_type($user_id);
+
+		//get the users subscription member type
+		$user_has_memtype = rcpbp_get_subscription_member_type($rcp_user_sub_level);
+
+		//if the users subscription has a member type and we are cancelling then clear the member type
+		if(! empty($user_has_memtype) and $new_status === 'expired' and ($user_has_memtype === $user_has_memtype)) {
+			bp_set_member_type( $user_id, '' );
+		}
+
+		//if the users member type is empty and we are activating then set the member type
+		if( empty($rcpbp_memtype) and $new_status === 'active') {
+			bp_set_member_type( $user_id, rcpbp_get_subscription_member_type($rcp_user_sub_level));
+		}
+
+		$updated = bp_get_member_type($user_id);
+
+		$test = 'test';
+
+	}
+
+}
+
+add_action('rcp_set_status','rcpbp_remove_member_type',10,3);
