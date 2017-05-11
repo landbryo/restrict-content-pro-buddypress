@@ -99,4 +99,39 @@ function rcpbp_plugin_updater() {
 }
 add_action( 'admin_init', 'rcpbp_plugin_updater' );
 
+/**
+ * check the amount of groups and prevent the user from creating if max is reached
+ */
+function rcpbp_check_group_numbers() {
+
+	global $wpdb;
+	global $rcp_levels_db;
+
+	//get the groups created by this user
+	$created_groups = $wpdb->get_results( $wpdb->prepare( "SELECT name FROM wp_bp_groups WHERE creator_id = %d", get_current_user_id() ) );
+
+	//count the number of groups created by this user
+	$created_groups_count = count($created_groups);
+
+	//get the current user subscription level
+	$user_sub_id = rcp_get_subscription_id(get_current_user_id());
+
+	//get the current users subscription level limit
+	$sub_level_limit = $rcp_levels_db->get_meta( $user_sub_id,'rcpbp_group_limit', $single = true );
+
+	//if the user has reached their max amount of groups allowed to create
+	if ($created_groups_count >= $sub_level_limit) {
+
+		//get the groups page post id
+		$bp_pages = get_option( 'bp-pages' );
+		$groups_page_id = $bp_pages['groups'];
+
+		//go back to the groups page
+		wp_redirect(get_permalink($groups_page_id));
+		bp_core_add_message(esc_html('You have reached the max amount of groups allowed to create.'),'warning');
+	}
+
+}
+
+add_action( 'groups_action_sort_creation_steps', 'rcpbp_check_group_numbers', 10 );
 
