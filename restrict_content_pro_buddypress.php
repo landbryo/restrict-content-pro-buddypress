@@ -99,4 +99,40 @@ function rcpbp_plugin_updater() {
 }
 add_action( 'admin_init', 'rcpbp_plugin_updater' );
 
+function rcpbp_check_components($menu_item) {
+
+	global $rcp_levels_db;
+
+	if ( is_admin() ) {
+		return $menu_item;
+	}
+
+/*	if (! is_array($menu_item)) {
+		return $menu_item;
+	}*/
+
+	$user_sub_id = rcp_get_subscription_id(get_current_user_id());
+
+	$friends_option = $rcp_levels_db->get_meta( $user_sub_id,'rcpbp_friend_option', $single = true );
+	$message_option = $rcp_levels_db->get_meta( $user_sub_id,'rcpbp_message_option', $single = true );
+
+
+	if ( $friends_option === 'Deny' &&  $menu_item->post_title === 'Friends') {
+		remove_filter('wp_setup_nav_menu_item','bp_setup_nav_menu_item',9);
+		return;
+	}
+
+	if ( $message_option === 'Deny' &&  $menu_item->post_title === 'Messages') {
+		remove_filter('bp_setup_nav_menu_item','bp_setup_nav_menu_item',9);
+		return;
+	}
+
+	return $menu_item;
+
+
+
+}
+
+add_filter( 'wp_setup_nav_menu_item', 'rcpbp_check_components', 9, 1 );
+
 

@@ -46,6 +46,8 @@ class RCPBP_Setup {
 
 	protected function includes() {
 //		include_once( RCPBP_PATH . '/includes/components.php' );
+		include_once( RCPBP_PATH . '/includes/friend-option.php' );
+		include_once( RCPBP_PATH . '/includes/message-option.php' );
 		include_once( RCPBP_PATH . '/includes/member-types.php' );
 		include_once( RCPBP_PATH . '/includes/profile.php' );
 		include_once( RCPBP_PATH . '/includes/restricted-content.php' );
