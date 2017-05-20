@@ -1,9 +1,9 @@
 <?php
 /**
  * Plugin Name: Restrict Content Pro - BuddyPress
- * Plugin URI:  https://iwitnessdesign.com/downloads/restrict-content-pro-buddypress/
+ * Plugin URI:  https://skillfulplugins.com/plugins/restrict-content-pro-buddypress/
  * Description: Extends Restrict Content Pro to integrate with BuddyPress
- * Version:     1.1
+ * Version:     1.1.1
  * Author:      Tanner Moushey
  * Author URI:  https://iwitnessdesign.com/
  * License:     GPLv2+
@@ -30,12 +30,12 @@
  */
 
 // Useful global constants
-define( 'RCPBP_VERSION', '1.1' );
+define( 'RCPBP_VERSION', '1.1.1' );
 define( 'RCPBP_URL',     plugin_dir_url( __FILE__ ) );
 define( 'RCPBP_PATH',    dirname( __FILE__ ) . '/' );
 
 // EDD Licensing constants
-define( 'RCPBP_STORE_URL', 'https://iwitnessdesign.com' );
+define( 'RCPBP_STORE_URL', 'https://skillfulplugins.com' );
 define( 'RCPBP_ITEM_NAME', 'Restrict Content Pro - BuddyPress' );
 define( 'RCPBP_PLUGIN_LICENSE_PAGE', 'rcpbp-settings' );
 
