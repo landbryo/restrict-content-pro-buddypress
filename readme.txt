@@ -1,6 +1,6 @@
 === Restrict Content Pro - BuddyPress ===
 Contributors:      tanner-m
-Donate link:       https://tannermoushey.com/downloads/restrict-content-pro-buddypress/
+Donate link:       https://skillfulplugins.com/plugins/restrict-content-pro-buddypress/
 Tags: 
 Requires at least: 3.5.1
 Tested up to:      4.3.1
@@ -25,6 +25,14 @@ Extends Restrict Content Pro to integrate with BuddyPress
 
 
 == Changelog ==
+
+= 1.1.1 =
+* Update plugin update path
+
+= 1.1 =
+* Update plugin to match new restricted content interface from RCP.
+* Add option to restrict content by member type and by group membership
+* Add option to restrict group content access
 
 = 1.0.2 =
 Make sure that is_plugin_active is defined before calling it during the setup check.
