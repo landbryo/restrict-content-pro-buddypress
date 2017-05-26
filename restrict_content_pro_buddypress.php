@@ -107,9 +107,20 @@ function rcpbp_check_components($menu_item) {
 		return $menu_item;
 	}
 
-/*	if (! is_array($menu_item)) {
+	// We use information stored in the CSS class to determine what kind of
+	// menu item this is, and how it should be treated.
+	$menu_classes = $menu_item->classes;
+
+	if ( is_array( $menu_classes ) ) {
+		$menu_classes = implode( ' ', $menu_item->classes);
+	}
+
+	preg_match( '/\sbp-(.*)-nav/', $menu_classes, $matches );
+
+	// If this isn't a BP menu item, we can stop here.
+	if ( empty( $matches[1] ) ) {
 		return $menu_item;
-	}*/
+	}
 
 	$user_sub_id = rcp_get_subscription_id(get_current_user_id());
 
@@ -117,14 +128,14 @@ function rcpbp_check_components($menu_item) {
 	$message_option = $rcp_levels_db->get_meta( $user_sub_id,'rcpbp_message_option', $single = true );
 
 
-	if ( $friends_option === 'Deny' &&  $menu_item->post_title === 'Friends') {
-		remove_filter('wp_setup_nav_menu_item','bp_setup_nav_menu_item',9);
-		return;
+	if ( $friends_option === 'Deny' &&  $menu_item->title === 'Friends') {
+		$menu_item->_invalid = true;
+		return $menu_item;
 	}
 
-	if ( $message_option === 'Deny' &&  $menu_item->post_title === 'Messages') {
-		remove_filter('bp_setup_nav_menu_item','bp_setup_nav_menu_item',9);
-		return;
+	if ( $message_option === 'Deny' &&  $menu_item->title === 'Messages') {
+		$menu_item->_invalid = true;
+		return $menu_item;
 	}
 
 	return $menu_item;
@@ -135,4 +146,28 @@ function rcpbp_check_components($menu_item) {
 
 add_filter( 'wp_setup_nav_menu_item', 'rcpbp_check_components', 9, 1 );
 
+function rcpbp_check_activity($slug, $name = null) {
 
+	global $rcp_levels_db;
+
+	$user_sub_id = rcp_get_subscription_id(get_current_user_id());
+	
+	$friends_option = $rcp_levels_db->get_meta( $user_sub_id,'rcpbp_friend_option', $single = true );
+	$message_option = $rcp_levels_db->get_meta( $user_sub_id,'rcpbp_message_option', $single = true );
+
+	if ( $friends_option === 'Deny' && bp_is_friends_component()) {
+		echo '<div class="rcpbp-deny-friend"><p>Sorry, you do not have permission to view this page</p></div>';
+		return false;
+	}
+
+	if ( $message_option === 'Deny' && bp_is_messages_component()) {
+		echo '<div class="rcpbp-deny-friend"><p>Sorry, you do not have permission to view this page</p></div>';
+		return false;
+	}
+	return $slug;
+
+
+}
+
+
+add_filter('bp_get_template_part','rcpbp_check_activity',9,2);
