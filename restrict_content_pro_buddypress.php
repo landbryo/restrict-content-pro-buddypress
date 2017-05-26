@@ -175,11 +175,6 @@ add_filter('bp_get_template_part','rcpbp_check_activity',9,2);
 function rcpbp_check_activity_admin_list() {
 
 	global $rcp_levels_db;
-	$bp = buddypress();
-
-	$navparent = $bp->members->nav;
-
-
 
 	$user_sub_id = rcp_get_subscription_id(get_current_user_id());
 
