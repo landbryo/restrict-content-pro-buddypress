@@ -151,7 +151,7 @@ function rcpbp_check_activity($slug, $name = null) {
 	global $rcp_levels_db;
 
 	$user_sub_id = rcp_get_subscription_id(get_current_user_id());
-	
+
 	$friends_option = $rcp_levels_db->get_meta( $user_sub_id,'rcpbp_friend_option', $single = true );
 	$message_option = $rcp_levels_db->get_meta( $user_sub_id,'rcpbp_message_option', $single = true );
 
@@ -171,3 +171,29 @@ function rcpbp_check_activity($slug, $name = null) {
 
 
 add_filter('bp_get_template_part','rcpbp_check_activity',9,2);
+
+function rcpbp_check_activity_admin_list() {
+
+	global $rcp_levels_db;
+	$bp = buddypress();
+
+	$navparent = $bp->members->nav;
+
+
+
+	$user_sub_id = rcp_get_subscription_id(get_current_user_id());
+
+	$friends_option = $rcp_levels_db->get_meta( $user_sub_id,'rcpbp_friend_option', $single = true );
+	$message_option = $rcp_levels_db->get_meta( $user_sub_id,'rcpbp_message_option', $single = true );
+
+	if ( $friends_option === 'Deny') {
+		bp_core_remove_nav_item('friends');
+	}
+
+	if ( $message_option === 'Deny') {
+		bp_core_remove_nav_item('messages');
+	}
+
+}
+
+add_filter('bp_before_member_home_content','rcpbp_check_activity_admin_list');
