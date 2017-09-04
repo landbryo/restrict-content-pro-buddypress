@@ -4,11 +4,9 @@
  *
  * These options are for restricting content within categories
  *
- * @package     Restrict Content Pro
+ * @package     Restrict Content Pro - BuddyPress
  * @subpackage  Admin/Categories
- * @copyright   Copyright (c) 2017, Pippin Williamson
- * @license     http://opensource.org/licenses/gpl-2.0.php GNU Public License
- * @since       2.0
+ * @since       1.1.2
  */
 
 // Exit if accessed directly
@@ -17,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 /**
  * Setup actions for taxonomy restricted fields
  *
- * @since 1.0.2
+ * @since 1.1.2
  * @return void
  */
 function rcpbp_setup_taxonomy_edit_fields() {
@@ -34,7 +32,7 @@ add_action( 'admin_init', 'rcpbp_setup_taxonomy_edit_fields' );
  * Add restriction options to the edit term page
  *
  * @access      public
- * @since       1.0.2
+ * @since       1.1.2
  * @return      void
  */
 function rcpbp_term_edit_meta_fields( $term ) {
@@ -89,7 +87,7 @@ function rcpbp_term_edit_meta_fields( $term ) {
  * @param string $taxonomy
  *
  * @access      public
- * @since       1.0.2
+ * @since       1.1.2
  * @return      void
  */
 function rcpbp_term_add_meta_fields( $taxonomy ) {
@@ -136,7 +134,7 @@ function rcpbp_term_add_meta_fields( $taxonomy ) {
  * @param string $taxonomy Taxonomy slug.
  *
  * @access      public
- * @since       1.0.2
+ * @since       1.1.2
  * @return      void
  */
 function rcpbp_save_term_meta( $term_id, $tt_id, $taxonomy ) {
