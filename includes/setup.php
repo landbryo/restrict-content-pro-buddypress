@@ -50,6 +50,7 @@ class RCPBP_Setup {
 		include_once( RCPBP_PATH . '/includes/profile.php' );
 		include_once( RCPBP_PATH . '/includes/restricted-content.php' );
 		include_once( RCPBP_PATH . '/includes/groups.php' );
+		include_once( RCPBP_PATH . '/includes/admin/terms.php' );
 	}
 
 	/**
