@@ -3,9 +3,9 @@
  * Plugin Name: Restrict Content Pro - BuddyPress
  * Plugin URI:  https://skillfulplugins.com/plugins/restrict-content-pro-buddypress/
  * Description: Extends Restrict Content Pro to integrate with BuddyPress
- * Version:     1.1.1
- * Author:      Tanner Moushey
- * Author URI:  https://iwitnessdesign.com/
+ * Version:     1.1.2
+ * Author:      Skillful Plugins
+ * Author URI:  https://skillfulplugins.com/
  * License:     GPLv2+
  * Text Domain: rcpbp
  * Domain Path: /languages
@@ -30,7 +30,7 @@
  */
 
 // Useful global constants
-define( 'RCPBP_VERSION', '1.1.1' );
+define( 'RCPBP_VERSION', '1.1.2' );
 define( 'RCPBP_URL',     plugin_dir_url( __FILE__ ) );
 define( 'RCPBP_PATH',    dirname( __FILE__ ) . '/' );
 
