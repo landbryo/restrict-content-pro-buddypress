@@ -27,7 +27,7 @@ class RCPBP_Restricted_Content {
 	protected function __construct() {
 		add_action( 'rcp_metabox_fields_after', array( $this, 'bp_fields' ) );
 		add_action( 'save_post', array( $this, 'save_meta_data' ) );
-		add_filter( 'rcp_member_can_access', array( $this, 'can_access' ), 10, 3 );
+		add_filter( 'rcp_member_can_access', array( $this, 'can_access' ), 10, 4 );
 	}
 
 	/**
@@ -150,10 +150,11 @@ class RCPBP_Restricted_Content {
 	 * @param $ret
 	 * @param $user_id
 	 * @param $post_id
+	 * @param RCP_Member $rcp_member
 	 *
 	 * @return bool
 	 */
-	public function can_access( $ret, $user_id, $post_id ) {
+	public function can_access( $ret, $user_id, $post_id, $rcp_member ) {
 
 		$member_types = get_post_meta( $post_id, 'rcpbp_member_types', true );
 		$groups       = get_post_meta( $post_id, 'rcpbp_groups', true );
@@ -234,7 +235,19 @@ class RCPBP_Restricted_Content {
 
 		}
 
-		return $ret;
+		/**
+		 * Filter for BuddyPress component restrictions
+		 *
+		 * @since 1.1.2
+		 *
+		 * @param bool $ret Whether or not the user can access
+		 * @param int $user_id the id of the user
+		 * @param int $post_id the id of the post being checked
+		 * @param RCP_Member $rcp_member the RCP_Member instance being used
+		 *
+		 * @author Tanner Moushey
+		 */
+		return apply_filters( 'rcpbp_member_can_access', $ret, $user_id, $post_id, $rcp_member );
 	}
 
 }
