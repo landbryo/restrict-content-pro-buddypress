@@ -26,6 +26,11 @@ Extends Restrict Content Pro to integrate with BuddyPress
 
 == Changelog ==
 
+= 1.1.2 =
+* Add support for taxonomy restrictions with Member Types and Groups
+* Improve activation key settings
+* Add update card form to the account page
+
 = 1.1.1 =
 * Update plugin update path
 

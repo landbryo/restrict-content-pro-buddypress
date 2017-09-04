@@ -27,8 +27,8 @@ class RCPBP_Setup {
 	protected function __construct() {
 		add_action( 'plugins_loaded', array( $this, 'maybe_setup' ), -9999 );
 
-		add_action( 'admin_init', array( $this, 'activate_license'   ), 100 );
-		add_action( 'admin_init', array( $this, 'deactivate_license' ), 100 );
+		add_action( 'updated_option', array( $this, 'activate_license'   ), 100 );
+		add_action( 'updated_option', array( $this, 'deactivate_license' ), 100 );
 		add_action( 'admin_init', array( $this, 'register_settings' ), 50 );
 		add_action( 'admin_menu', array( $this, 'admin_menu'        ), 50 );
 		add_action( 'admin_notices', array( $this, 'license_admin_notice' ) );
@@ -50,6 +50,7 @@ class RCPBP_Setup {
 		include_once( RCPBP_PATH . '/includes/profile.php' );
 		include_once( RCPBP_PATH . '/includes/restricted-content.php' );
 		include_once( RCPBP_PATH . '/includes/groups.php' );
+		include_once( RCPBP_PATH . '/includes/admin/terms.php' );
 	}
 
 	/**

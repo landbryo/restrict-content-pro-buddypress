@@ -27,7 +27,7 @@ class RCPBP_Restricted_Content {
 	protected function __construct() {
 		add_action( 'rcp_metabox_fields_after', array( $this, 'bp_fields' ) );
 		add_action( 'save_post', array( $this, 'save_meta_data' ) );
-		add_filter( 'rcp_member_can_access', array( $this, 'can_access' ), 10, 3 );
+		add_filter( 'rcp_member_can_access', array( $this, 'can_access' ), 10, 4 );
 	}
 
 	/**
@@ -91,7 +91,7 @@ class RCPBP_Restricted_Content {
 				<label for="<?php echo $field_id; ?>_<?php echo absint( $group->id ); ?>"><?php echo esc_html( $group->name ); ?></label><br/>
 			<?php endforeach; ?>
 		</div>
-	<?php
+		<?php
 	}
 
 	/**
@@ -150,10 +150,11 @@ class RCPBP_Restricted_Content {
 	 * @param $ret
 	 * @param $user_id
 	 * @param $post_id
+	 * @param RCP_Member $rcp_member
 	 *
 	 * @return bool
 	 */
-	public function can_access( $ret, $user_id, $post_id ) {
+	public function can_access( $ret, $user_id, $post_id, $rcp_member ) {
 
 		$member_types = get_post_meta( $post_id, 'rcpbp_member_types', true );
 		$groups       = get_post_meta( $post_id, 'rcpbp_groups', true );
@@ -189,7 +190,64 @@ class RCPBP_Restricted_Content {
 		}
 
 
-		return $ret;
+		$has_post_restrictions    = rcp_has_post_restrictions( $post_id );
+		$term_restricted_post_ids = rcp_get_post_ids_assigned_to_restricted_terms();
+
+		/**
+		 * since no post-level restrictions, check to see if user is restricted via term
+		 * @see RCP_Member::can_access()
+		 */
+		if ( $ret && ! $has_post_restrictions && in_array( $post_id, $term_restricted_post_ids ) ) {
+
+			$restricted = false;
+
+			$terms = (array) rcp_get_connected_term_ids( $post_id );
+
+			if ( ! empty( $terms ) ) {
+
+				foreach( $terms as $term_id ) {
+
+					$restrictions = rcp_get_term_restrictions( $term_id );
+
+					if ( ! empty( $restrictions['member_types'] ) && ! in_array( bp_get_member_type( $user_id ), $restrictions['member_types'] ) ) {
+						$restricted = true;
+						break;
+					}
+
+					if ( ! empty( $restrictions['groups'] ) && function_exists( 'groups_is_user_member' ) ) {
+						$groups = bp_get_user_groups( $user_id, array(
+							'is_admin' => null,
+							'is_mod'   => null,
+						) );
+
+						if ( ! array_intersect( array_keys( $groups ), $restrictions['groups'] ) ) {
+							$restricted = true;
+							break;
+						}
+					}
+
+				}
+			}
+
+			if ( $restricted ) {
+				$ret = false;
+			}
+
+		}
+
+		/**
+		 * Filter for BuddyPress component restrictions
+		 *
+		 * @since 1.1.2
+		 *
+		 * @param bool $ret Whether or not the user can access
+		 * @param int $user_id the id of the user
+		 * @param int $post_id the id of the post being checked
+		 * @param RCP_Member $rcp_member the RCP_Member instance being used
+		 *
+		 * @author Tanner Moushey
+		 */
+		return apply_filters( 'rcpbp_member_can_access', $ret, $user_id, $post_id, $rcp_member );
 	}
 
 }
