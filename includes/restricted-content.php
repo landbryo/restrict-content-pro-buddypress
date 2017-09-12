@@ -9,6 +9,20 @@ class RCPBP_Restricted_Content {
 	protected static $_instance;
 
 	/**
+	 * Whether or not the content failed the member type restriction test
+	 *
+	 * @var bool
+	 */
+	public static $_is_restricted_member_type = false;
+
+	/**
+	 * Whether or not the content failed the group restriction test
+	 *
+	 * @var bool
+	 */
+	public static $_is_restricted_group = false;
+
+	/**
 	 * Only make one instance of the RCPBP_Restricted_Content
 	 *
 	 * @return RCPBP_Restricted_Content
@@ -28,6 +42,7 @@ class RCPBP_Restricted_Content {
 		add_action( 'rcp_metabox_fields_after', array( $this, 'bp_fields' ) );
 		add_action( 'save_post', array( $this, 'save_meta_data' ) );
 		add_filter( 'rcp_member_can_access', array( $this, 'can_access' ), 10, 4 );
+		add_filter( 'rcp_restricted_message', array( $this, 'restricted_message_filter' ), 100 );
 	}
 
 	/**
@@ -158,6 +173,11 @@ class RCPBP_Restricted_Content {
 	 */
 	public function can_access( $ret, $user_id, $post_id, $rcp_member ) {
 
+		// don't check if the user does not already have access
+		if ( ! $ret ) {
+			return $ret;
+		}
+
 		$member_types      = get_post_meta( $post_id, 'rcpbp_member_types', true );
 		$groups            = get_post_meta( $post_id, 'rcpbp_groups', true );
 		$user_member_types = bp_get_member_type( $user_id, false );
@@ -176,6 +196,7 @@ class RCPBP_Restricted_Content {
 
 			if ( ! apply_filters( 'rcpbp_member_can_access_member_types', $has_type, $user_id, $post_id, $ret ) ) {
 				$ret = false;
+				self::$_is_restricted_member_type = true;
 			}
 		}
 
@@ -185,6 +206,7 @@ class RCPBP_Restricted_Content {
 
 			if ( ! apply_filters( 'rcpbp_member_can_access_groups', $group_member, $user_id, $post_id, $ret ) ) {
 				$ret = false;
+				self::$_is_restricted_group = true;
 			}
 		}
 
@@ -208,13 +230,13 @@ class RCPBP_Restricted_Content {
 					$restrictions = rcp_get_term_restrictions( $term_id );
 
 					if ( ! empty( $restrictions['member_types'] ) && ! array_intersect( (array) $user_member_types, (array) $restrictions['member_types'] ) ) {
-						$restricted = true;
+						$restricted = self::$_is_restricted_member_type = true;
 						break;
 					}
 
 					if ( ! empty( $restrictions['groups'] ) ) {
 						if ( ! array_intersect( array_keys( $user_groups ), (array) $restrictions['groups'] ) ) {
-							$restricted = true;
+							$restricted = self::$_is_restricted_group = true;
 							break;
 						}
 					}
@@ -241,6 +263,35 @@ class RCPBP_Restricted_Content {
 		 * @author Tanner Moushey
 		 */
 		return apply_filters( 'rcpbp_member_can_access', $ret, $user_id, $post_id, $rcp_member );
+	}
+
+	/**
+	 * Custom filter to modify the restricted message when a content is restricted by group or member type
+	 *
+	 * @param $message
+	 *
+	 * @since  1.1.3
+	 *
+	 * @return string $message
+	 * @author Tanner Moushey
+	 */
+	public function restricted_message_filter( $message ) {
+
+		// check to see if the content is restricted by group or member type
+		if ( ! ( self::$_is_restricted_group || self::$_is_restricted_member_type ) ) {
+			return $message;
+		}
+
+		/**
+		 * Custom filter for content that is restricted by group or member type
+		 *
+		 * @since 1.1.3
+		 *
+		 * @param string $message
+		 * @param bool self::$_is_restricted_group shows if this content has an unmet group restriction
+		 * @param bool self::$_is_restricted_member_type shows if this content has an unmet member type restriction
+		 */
+		return apply_filters( 'rcpbp_restricted_message', $message, self::$_is_restricted_group, self::$_is_restricted_member_type );
 	}
 
 }
