@@ -158,18 +158,21 @@ class RCPBP_Restricted_Content {
 	 */
 	public function can_access( $ret, $user_id, $post_id, $rcp_member ) {
 
-		$member_types = get_post_meta( $post_id, 'rcpbp_member_types', true );
-		$groups       = get_post_meta( $post_id, 'rcpbp_groups', true );
+		$member_types      = get_post_meta( $post_id, 'rcpbp_member_types', true );
+		$groups            = get_post_meta( $post_id, 'rcpbp_groups', true );
+		$user_member_types = bp_get_member_type( $user_id, false );
+		$user_groups       = array();
+
+		if ( function_exists( 'bp_get_user_groups' ) ) {
+			$user_groups = bp_get_user_groups( $user_id, array(
+				'is_admin' => null,
+				'is_mod'   => null,
+			) );
+		}
 
 		// Check if the user has one of the given member types
 		if ( $member_types ) {
-			$has_type = false;
-			foreach( (array) $member_types as $type ) {
-				if ( bp_has_member_type( $user_id, $type ) ) {
-					$has_type = true;
-					break;
-				}
-			}
+			$has_type = array_intersect( (array) $user_member_types, (array) $member_types );
 
 			if ( ! apply_filters( 'rcpbp_member_can_access_member_types', $has_type, $user_id, $post_id, $ret ) ) {
 				$ret = false;
@@ -178,19 +181,12 @@ class RCPBP_Restricted_Content {
 
 		// Check if the user is a member of any of the given groups
 		if ( $groups ) {
-			$group_member = false;
-			foreach( (array) $groups as $group ) {
-				if ( groups_is_user_member( $user_id, $group ) ) {
-					$group_member = true;
-					break;
-				}
-			}
+			$group_member = array_intersect( array_keys( $user_groups ), $groups );
 
 			if ( ! apply_filters( 'rcpbp_member_can_access_groups', $group_member, $user_id, $post_id, $ret ) ) {
 				$ret = false;
 			}
 		}
-
 
 		$has_post_restrictions    = rcp_has_post_restrictions( $post_id );
 		$term_restricted_post_ids = rcp_get_post_ids_assigned_to_restricted_terms();
@@ -211,18 +207,13 @@ class RCPBP_Restricted_Content {
 
 					$restrictions = rcp_get_term_restrictions( $term_id );
 
-					if ( ! empty( $restrictions['member_types'] ) && ! in_array( bp_get_member_type( $user_id ), $restrictions['member_types'] ) ) {
+					if ( ! empty( $restrictions['member_types'] ) && ! array_intersect( (array) $user_member_types, (array) $restrictions['member_types'] ) ) {
 						$restricted = true;
 						break;
 					}
 
-					if ( ! empty( $restrictions['groups'] ) && function_exists( 'groups_is_user_member' ) ) {
-						$groups = bp_get_user_groups( $user_id, array(
-							'is_admin' => null,
-							'is_mod'   => null,
-						) );
-
-						if ( ! array_intersect( array_keys( $groups ), $restrictions['groups'] ) ) {
+					if ( ! empty( $restrictions['groups'] ) ) {
+						if ( ! array_intersect( array_keys( $user_groups ), (array) $restrictions['groups'] ) ) {
 							$restricted = true;
 							break;
 						}
