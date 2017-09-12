@@ -74,7 +74,9 @@ class RCPBP_Setup {
 			$rcp_add_ons_page,
 			'post.php',
 			'edit.php',
-			'post-new.php'
+			'post-new.php',
+			'term.php',
+			'edit-tags.php',
 		);
 
 		wp_register_style( 'rcpbp-admin-css', RCPBP_URL . 'assets/css/admin-styles.css', array(), RCPBP_VERSION );
