@@ -50,7 +50,7 @@ function rcpbp_term_edit_meta_fields( $term ) {
 	?>
 
 	<?php if ( ! empty( $all_member_types ) ) : ?>
-		<tr id="rcp-metabox-field-member-types" class="rcp-metabox-field">
+		<tr class="rcp-metabox-field">
 			<th scope="row"><?php _e( 'Member Type', 'rcpbp' ); ?></th>
 			<td>
 				<?php foreach ( $all_member_types as $name => $member_type ) : ?>
@@ -65,15 +65,17 @@ function rcpbp_term_edit_meta_fields( $term ) {
 	<?php endif; ?>
 
 	<?php if ( ! empty( $all_groups['groups'] ) ) : ?>
-		<tr id="rcp-metabox-field-groups" class="rcp-metabox-field">
+		<tr class="rcp-metabox-field">
 			<th scope="row"><?php _e( 'Groups', 'rcpbp' ); ?></th>
 			<td>
-				<?php foreach ( $all_groups['groups'] as $group ) : ?>
-					<label for="rcp_category_meta[groups][<?php echo absint( $group->id ); ?>]">
-						<input type="checkbox" value="<?php echo absint( $group->id ); ?>" <?php checked( true, in_array( $group->id, (array) $groups ) ); ?> name="rcp_category_meta[groups][<?php echo absint( $group->id ); ?>][]" id="rcp_category_meta[groups][<?php echo absint( $group->id ); ?>]" />&nbsp;
-						<?php echo esc_html( $group->name ); ?>
-					</label><br />
-				<?php endforeach; ?>
+				<div class="rcpbp-restricted-groups-container">
+					<?php foreach ( $all_groups['groups'] as $group ) : ?>
+						<label for="rcp_category_meta[groups][<?php echo absint( $group->id ); ?>]">
+							<input type="checkbox" value="<?php echo absint( $group->id ); ?>" <?php checked( true, in_array( $group->id, (array) $groups ) ); ?> name="rcp_category_meta[groups][<?php echo absint( $group->id ); ?>][]" id="rcp_category_meta[groups][<?php echo absint( $group->id ); ?>]" />&nbsp;
+							<?php echo esc_html( $group->name ); ?>
+						</label><br />
+					<?php endforeach; ?>
+				</div>
 				<span class="description"><?php _e( 'Member of these groups are allowed to view content in this category. Leave unchecked for all.', 'restrict-content-pro-buddypress' ); ?></span>
 			</td>
 		</tr>
@@ -94,7 +96,7 @@ function rcpbp_term_add_meta_fields( $taxonomy ) {
 	$all_member_types = apply_filters( 'rcpbp_restricted_member_types', bp_get_member_types( array(), 'objects' ) );
 
 	if ( bp_is_active( 'groups' ) ) {
-		$all_groups = apply_filters( 'rcpbp_restricted_groups', groups_get_groups( 'show_hidden=true' ) );
+		$all_groups = apply_filters( 'rcpbp_restricted_groups', groups_get_groups( 'show_hidden=true&per_page=999' ) );
 	}
 
 	?>
@@ -106,7 +108,7 @@ function rcpbp_term_add_meta_fields( $taxonomy ) {
 				<label for="rcp_category_meta[member_types][<?php echo esc_attr( $name ); ?>]">
 					<input type="checkbox" value="<?php echo esc_attr( $name ); ?>" name="rcp_category_meta[member_types][<?php echo esc_attr( $name ); ?>][]" id="rcp_category_meta[member_types][<?php echo esc_attr( $name ); ?>]" />&nbsp;
 					<?php echo esc_html( $member_type->labels['name'] ); ?>
-				</label><br />
+				</label>
 			<?php endforeach; ?>
 			<span class="description"><?php _e( 'Member types allowed to view content in this category. Leave unchecked for all.', 'restrict-content-pro-buddypress' ); ?></span>
 		</div>
@@ -115,12 +117,14 @@ function rcpbp_term_add_meta_fields( $taxonomy ) {
 	<?php if ( ! empty( $all_groups['groups'] ) ) : ?>
 		<div class="form-field">
 			<p><?php _e( 'Groups', 'rcpbp' ); ?></p>
-			<?php foreach ( $all_groups['groups'] as $group ) : ?>
-				<label for="rcp_category_meta[groups][<?php echo absint( $group->id ); ?>]">
-					<input type="checkbox" value="<?php echo absint( $group->id ); ?>" name="rcp_category_meta[groups][<?php echo absint( $group->id ); ?>][]" id="rcp_category_meta[groups][<?php echo absint( $group->id ); ?>]" />&nbsp;
-					<?php echo esc_html( $group->name ); ?>
-				</label><br />
-			<?php endforeach; ?>
+			<div class="rcpbp-restricted-groups-container">
+				<?php foreach ( $all_groups['groups'] as $group ) : ?>
+					<label for="rcp_category_meta[groups][<?php echo absint( $group->id ); ?>]">
+						<input type="checkbox" value="<?php echo absint( $group->id ); ?>" name="rcp_category_meta[groups][<?php echo absint( $group->id ); ?>][]" id="rcp_category_meta[groups][<?php echo absint( $group->id ); ?>]" />&nbsp;
+						<?php echo esc_html( $group->name ); ?>
+					</label>
+				<?php endforeach; ?>
+			</div>
 			<span class="description"><?php _e( 'Member of these groups are allowed to view content in this category. Leave unchecked for all.', 'restrict-content-pro-buddypress' ); ?></span>
 		</div>
 	<?php endif;

@@ -48,7 +48,7 @@ class RCPBP_Restricted_Content {
 			return;
 		}
 
-		$groups = apply_filters( 'rcpbp_restricted_groups', groups_get_groups( 'show_hidden=true' ) );
+		$groups = apply_filters( 'rcpbp_restricted_groups', groups_get_groups( 'show_hidden=true&per_page=999' ) );
 
 		if ( ! empty( $groups['groups'] ) ) {
 			$this->groups_field( $groups['groups'], $post->ID );
@@ -86,10 +86,12 @@ class RCPBP_Restricted_Content {
 		?>
 		<div id="rcp-metabox-field-groups" class="rcp-metabox-field">
 			<p><?php _e( 'Require member to be a part of any one of the selected groups.', 'rcpbp' ); ?></p>
-			<?php foreach ( $groups as $group ) : ?>
-				<input type="checkbox" value="<?php echo absint( $group->id ); ?>" <?php checked( true, in_array( $group->id, (array) $selected ) ); ?> name="<?php echo $field_id; ?>[]" id="<?php echo $field_id; ?>_<?php echo absint( $group->id ); ?>" />&nbsp;
-				<label for="<?php echo $field_id; ?>_<?php echo absint( $group->id ); ?>"><?php echo esc_html( $group->name ); ?></label><br/>
-			<?php endforeach; ?>
+			<div class="rcpbp-restricted-groups-container">
+				<?php foreach ( $groups as $group ) : ?>
+					<input type="checkbox" value="<?php echo absint( $group->id ); ?>" <?php checked( true, in_array( $group->id, (array) $selected ) ); ?> name="<?php echo $field_id; ?>[]" id="<?php echo $field_id; ?>_<?php echo absint( $group->id ); ?>" />&nbsp;
+					<label for="<?php echo $field_id; ?>_<?php echo absint( $group->id ); ?>"><?php echo esc_html( $group->name ); ?></label><br/>
+				<?php endforeach; ?>
+			</div>
 		</div>
 		<?php
 	}

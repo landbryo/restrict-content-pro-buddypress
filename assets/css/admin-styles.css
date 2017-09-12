@@ -4,3 +4,8 @@
 	padding-left: 10px;
 	display: none;
 }
+
+.rcpbp-restricted-groups-container {
+	max-height: 200px;
+	overflow: scroll;
+}
