@@ -26,6 +26,11 @@ Extends Restrict Content Pro to integrate with BuddyPress
 
 == Changelog ==
 
+=1.1.3=
+* Add support for multiple Member Types per user
+* Fixed admin UI where the list of restricted groups was limited to 20
+* Added a new filter (rcpbp_restricted_message) for better restricted messages for content restricted by group or Member Type
+
 = 1.1.2 =
 * Add support for taxonomy restrictions with Member Types and Groups
 * Improve activation key settings
