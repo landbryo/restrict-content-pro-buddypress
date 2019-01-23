@@ -30,7 +30,7 @@ class RCPBP_Setup {
 		add_action( 'updated_option', array( $this, 'activate_license'   ), 100 );
 		add_action( 'updated_option', array( $this, 'deactivate_license' ), 100 );
 		add_action( 'admin_init', array( $this, 'register_settings' ), 50 );
-		add_action( 'admin_menu', array( $this, 'admin_menu'        ), 50 );
+		add_action( 'admin_menu', array( $this, 'admin_menu' ), 50 );
 		add_action( 'admin_notices', array( $this, 'license_admin_notice' ) );
 
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_styles' ) );
@@ -122,6 +122,35 @@ class RCPBP_Setup {
 	 */
 	public function register_settings() {
 		register_setting( 'rcpbp_settings_group', 'rcpbp_license_key', array( $this, 'sanitize_license' ) );
+		// register visibility settings
+		register_setting( 'rcpbp_vis_settings_group', 'rcpbp_vis_rd_page', array( $this, 'sanitize_vis_rd_page' ) );
+		register_setting( 'rcpbp_vis_settings_group', 'rcpbp_vis_rd_toggle', array( $this, 'sanitize_vis_rd_toggle' ) );
+
+		// Add visibility settings section
+		add_settings_section(
+			'rcpbp_bp_vis_section',
+			'Visibility Settings',
+			array( $this, 'rcpbp_bp_vis_section_callback' ),
+			RCPBP_PLUGIN_LICENSE_PAGE
+		);
+
+		// Add checkbox to enable page redirect
+		add_settings_field(
+			'rcpbp_bp_vis_rd_toggle', // id
+			'Enable redirection', // title
+			array( $this, 'rcpbp_bp_vis_toggle_callback' ),
+			RCPBP_PLUGIN_LICENSE_PAGE,
+			'rcpbp_bp_vis_section'
+		);
+	
+		// Add field to select redirect pages
+		add_settings_field(
+			'rcpbp_bp_vis_rd_page', // id
+			'Redirect to page', // title
+			array( $this, 'rcpbp_bp_vis_rd_page_callback' ),
+			RCPBP_PLUGIN_LICENSE_PAGE,
+			'rcpbp_bp_vis_section'
+		);
 	}
 
 	/**
@@ -147,8 +176,16 @@ class RCPBP_Setup {
 
 			<h2 class="rcpbp-settings-title"><?php echo esc_html( get_admin_page_title() ); ?></h2><hr>
 
+			<?php $active_tab = isset( $_GET[ 'tab' ] ) ? $_GET[ 'tab' ] : 'general_options'; ?>
+
+			<h2 class="nav-tab-wrapper">
+				<a href="?page=rcpbp-settings&tab=general_options" class="nav-tab <?php echo $active_tab == 'general_options' ? 'nav-tab-active' : ''; ?>">General</a>
+				<a href="?page=rcpbp-settings&tab=restrict_options" class="nav-tab <?php echo $active_tab == 'restrict_options' ? 'nav-tab-active' : ''; ?>">Restriction</a>
+			</h2>
+
 			<form method="post" action="options.php" class="rcp_options_form">
-				<?php settings_fields( 'rcpbp_settings_group' ); ?>
+			<?php if( $active_tab == 'general_options' ) {
+				settings_fields( 'rcpbp_settings_group' ); ?>
 
 				<table class="form-table">
 					<tr>
@@ -171,17 +208,23 @@ class RCPBP_Setup {
 
 				</table>
 
-				<?php settings_fields( 'rcpbp_settings_group' ); ?>
-				<?php wp_nonce_field( 'rcpbp_nonce', 'rcpbp_nonce' ); ?>
-				<?php submit_button( 'Save Options' ); ?>
-
+				<?php 
+				settings_fields( 'rcpbp_settings_group' );
+				wp_nonce_field( 'rcpbp_nonce', 'rcpbp_nonce' );
+		} elseif( $active_tab == 'restrict_options' ) {
+				// restrict options page fields
+				settings_fields( 'rcpbp_vis_settings_group' );
+				do_settings_sections( RCPBP_PLUGIN_LICENSE_PAGE );
+			} 
+			submit_button( 'Save Options' );
+			?>
 			</form>
 		</div>
 
 	<?php
 	}
 
-
+	// Sanitize functions 
 	public function sanitize_license( $new ) {
 		$old = get_option( 'rcpbp_license_key' );
 		if ( $old && $old != $new ) {
@@ -189,6 +232,16 @@ class RCPBP_Setup {
 		}
 
 		return $new;
+	}
+
+	// sanitize page ID to make ensure stored value is a number
+	public function sanitize_vis_rd_toggle() {
+		return sanitize_key( $_POST['rcpbp_bp_vis_rd_toggle'] );
+	}
+
+	// sanitize page ID to make ensure stored value is a number
+	public function sanitize_vis_rd_page() {
+		return absint( $_POST['rcpbp_bp_vis_rd_page'] );
 	}
 
 	public function activate_license() {
@@ -385,6 +438,31 @@ class RCPBP_Setup {
 		}
 	}
 
+	// Callback for visibility section description
+	public function rcpbp_bp_vis_section_callback() {
+		echo '<p>These settings allow you to restrict non-logged in users from accessing BuddyPress content. First enable redirection, then select which page users should be redirected to.</p>';
+	}
+
+	// Callback for visibility section toggle (enable/disable)
+	public function rcpbp_bp_vis_toggle_callback() {
+		echo '<input type="checkbox" id="rcpbp-bp-vis-rd-toggle" name="rcpbp_bp_vis_rd_toggle" value="1" ';
+		checked( get_option( 'rcpbp_vis_rd_toggle' ), 1 );
+		echo '/>';
+	}
+
+	// Callback for visibility section page dropdown
+	public function rcpbp_bp_vis_rd_page_callback() {
+		$pages = get_pages();
+		$option = get_option( 'rcpbp_vis_rd_page' );
+		wp_dropdown_pages(
+			array(
+				'selected' => $option,
+				'id' => 'rcpbp-bp-vis-rd-page',
+				'name' => 'rcpbp_bp_vis_rd_page'
+			)
+		); 
+	}
+
 }
 
 /**
@@ -431,3 +509,15 @@ function rcpbp_check_license() {
 
 }
 add_action( 'admin_init', 'rcpbp_check_license' );
+
+// Redirect non BuddyPress users to selected page
+function rcpbp_non_member_redirect() {
+	$toggle = get_option( 'rcpbp_vis_rd_toggle' );
+	$rd = get_option( 'rcpbp_vis_rd_page' );
+
+	if ( ! bp_is_blog_page() && ! is_user_logged_in() && $toggle == 1 ) {
+		bp_core_redirect( get_permalink($rd) );
+	}
+
+}
+add_action( 'bp_template_redirect', 'rcpbp_non_member_redirect' );
